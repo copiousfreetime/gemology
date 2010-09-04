@@ -10,8 +10,10 @@ task 'gem:release' => 'test:run'
 
 Bones {
   name  'gemology'
-  authors  'FIXME (who is writing this software)'
-  email    'FIXME (your e-mail)'
-  url      'FIXME (project homepage)'
+  authors  'Jeremy Hinegardner'
+  email    'jeremy@copiousfreetime.org'
+  url      'http://gemology.copiousfreetime.org'
+
+  ignore_file  '.gitignore'
 }
 
