@@ -7,3 +7,4 @@ module Gemology
 end
 require 'gemology/paths'
 require 'gemology/version'
+require 'gemology/web'

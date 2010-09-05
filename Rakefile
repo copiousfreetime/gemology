@@ -15,5 +15,16 @@ Bones {
   url      'http://gemology.copiousfreetime.org'
 
   ignore_file  '.gitignore'
+
+  depend_on 'resque',     :version => "~> 1.10.0"
+  depend_on 'cloudfiles', :version => "~> 1.4.8"
+  depend_on 'sinatra',    :version => "~> 1.0"
+  depend_on 'trollop',    :version => "~> 1.16.2"
+
+  depend_on 'bones', :development => true
+  depend_on 'bones-extras', :version => "~> 1.2.4", :development => true
+
+  depend_on 'rspec', :version => "~> 1.3.0", :development => true
+  depend_on 'rcov',  :version => "~> 0.9.8", :development => true
 }
 
