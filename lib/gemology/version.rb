@@ -40,12 +40,12 @@ module Gemology
 
     #
     # :call-seq:
-    #   Version.to_hash -> { :major => ..., :minor => ..., :build => ... }
+    #   Version.to_hash -> { :major => ..., :minor => ..., :patch => ... }
     #
     # Return the version as a Hash
     #
     def self.to_hash
-      { :major => MAJOR, :minor => MINOR, :build => PATCH }
+      { :major => MAJOR, :minor => MINOR, :patch => PATCH }
     end
 
     # The Version in MAJOR.MINOR.PATCH dotted notation
