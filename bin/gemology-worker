@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require 'gemology'
+require 'resque'
+
+begin 
+  worker = Resque::Worker.new( *ARGV )
+  worker.verbose = true
+rescue Resque::NoQueueError
+  abort "Usage: #{Filename.basename( $0 )} queue [queue2] [queue3]"
+end
+
+worker.log "Starting worker #{worker}"
+worker.work( 5 )

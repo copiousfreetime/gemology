@@ -1,6 +1,6 @@
 require 'sinatra'
 require 'gemology/logable'
-require 'gemology/webhook/job'
+require 'gemology/fetch_store_job'
 module Gemology::Webhook
   # A sinatra app for accepting webhook posts from rubygems.org and 
   #
@@ -36,8 +36,10 @@ module Gemology::Webhook
     end
 
     def submit_job( json )
-      logger.debug "Submitting >>#{json}<<"
-      Resque.enqueue( ::Gemology::Webhook::Job, json )
+      data = JSON.parse( json )
+      uri = data['gem_uri']
+      logger.info "Submitting #{uri.class} #{uri}"
+      Resque.enqueue( ::Gemology::FetchStoreJob,  uri )
     end
   end
 end

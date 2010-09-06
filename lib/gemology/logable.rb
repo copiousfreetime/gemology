@@ -1,11 +1,19 @@
 require 'logging'
 module Gemology
 
+  def self.app_name
+    @app_name || "gemology"
+  end
+
+  def self.app_name=( name )
+    @app_name = name
+  end
+
   class Logging
     def self.init
       unless @initialized then
         layout   = ::Logging::Layouts::Pattern.new( :pattern => "%5l %c : %m" )
-        appender = ::Logging::Appenders::Syslog.new( File.basename( $0 ), 
+        appender = ::Logging::Appenders::Syslog.new( Gemology.app_name,
                                                     :logopt => ::Syslog::Constants::LOG_CONS | ::Syslog::Constants::LOG_PID, 
                                                     :facility => ::Syslog::Constants::LOG_LOCAL0,
                                                     :layout => layout)
