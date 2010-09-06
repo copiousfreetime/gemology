@@ -40,7 +40,7 @@ module Gemology::Webhook
     def submit_job( json )
       data = ::JSON.parse( json )
       uri = data['gem_uri']
-      logger.info "Submitting #{uri.class} #{uri}"
+      logger.info "Submitting #{uri}"
       Resque.enqueue( ::Gemology::FetchStoreJob,  uri )
     end
   end
