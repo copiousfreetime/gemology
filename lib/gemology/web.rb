@@ -9,6 +9,7 @@ module Gemology
 
     def app
       Rack::Builder.new do
+        use ::Gemology::Webhook::Logger, :level => :debug
         use ::Rack::CommonLogger
 
         map "/webhook" do

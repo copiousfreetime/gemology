@@ -1,10 +1,13 @@
 require 'sinatra'
+require 'gemology/logable'
 require 'gemology/webhook/job'
 module Gemology::Webhook
   # A sinatra app for accepting webhook posts from rubygems.org and 
   #
   # == Options
   class App < ::Sinatra::Base
+
+    include Gemology::Logable
 
     def initialize( app = nil, options = {} )
       @app = app
@@ -24,20 +27,16 @@ module Gemology::Webhook
         submit_job( request.body.read )
         halt 202
       rescue => e
-        log e.message
+        logger.error e.message
         e.backtrace.each do |b|
-          log b
+          logger.debug b
         end
         error(500, e.message)
       end
     end
 
-    def log( msg )
-      env['rack.errors'].puts msg
-    end
-
     def submit_job( json )
-      log "Submitting >>#{json}<<"
+      logger.debug "Submitting >>#{json}<<"
       Resque.enqueue( ::Gemology::Webhook::Job, json )
     end
   end

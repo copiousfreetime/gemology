@@ -1,7 +1,12 @@
 #!/usr/bin/env ruby
 
-require File.expand_path(
-    File.join(File.dirname(__FILE__), %w[.. lib gemology]))
+require 'gemology'
 
-# Put your code here
+class A
+  include Gemology::Logable
+end
 
+a = A.new
+%w[ debug info warn error ].each do |l|
+  a.logger.send( l, "A message at level #{l}" )
+end

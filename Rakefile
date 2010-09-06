@@ -20,6 +20,7 @@ Bones {
   depend_on 'cloudfiles', :version => "~> 1.4.8"
   depend_on 'sinatra',    :version => "~> 1.0"
   depend_on 'trollop',    :version => "~> 1.16.2"
+  depend_on 'logging',    :version => "~> 1.4.3"
 
   depend_on 'bones', :development => true
   depend_on 'bones-extras', :version => "~> 1.2.4", :development => true
