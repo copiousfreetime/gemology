@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'gemology/logable'
 require 'gemology/fetch_store_job'
+require 'resque'
 require 'json'
 
 module Gemology::Webhook
