@@ -18,7 +18,7 @@ module Gemology
     def self.container
       unless @container then
         cf = ::CloudFiles::Connection.new( :username => "copiousfreetime", :api_key => "cbf15dfbf487d9b00706ed18940dca8e" )
-        @container = cf.container( "gems" )
+        @container = cf.container( 'rubygems' )
       end
       return @container
     end
