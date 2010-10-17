@@ -1,0 +1,13 @@
+Gemspec fields
+==============
+
+- original_platform
+
+
+Questions
+=========
+- has a LICENSE file but no 'licenses' set
+- no description
+- no summary
+- description and summary are the same
+
