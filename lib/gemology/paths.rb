@@ -50,6 +50,10 @@ module Gemology
       self.sub_path( "work", *args )
     end
 
+    def self.db_path( *args )
+      self.sub_path( 'db', *args )
+    end
+
     #
     # :call-seq:
     #   Gemology::Paths.sub_path( sub, *args ) -> String

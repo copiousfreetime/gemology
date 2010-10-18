@@ -18,3 +18,4 @@ coverage
 doc
 pkg
 work
+db/*.db
