@@ -39,6 +39,19 @@ module Gemology
 
     #
     # :call-seq:
+    #   Gemology::Paths.work_path( *args ) -> String
+    #
+    # Returns the full expanded path of the +work+ directory below
+    # _root_dir_.  All parameters passed in are joined onto the 
+    # result. A trailing File::SEPARATOR is guaranteed if 
+    # _args_ are *not* present.
+    #
+    def self.work_path( *args )
+      self.sub_path( "work", *args )
+    end
+
+    #
+    # :call-seq:
     #   Gemology::Paths.sub_path( sub, *args ) -> String
     #
     # Returns the full expanded path of the +sub+ directory below _root_dir.  All

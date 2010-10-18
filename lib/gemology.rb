@@ -7,8 +7,11 @@ module Gemology
 end
 require 'gemology/paths'
 require 'gemology/version'
+
 require 'gemology/web'
 require 'gemology/webhook'
 require 'gemology/logable'
 require 'gemology/spec_lite'
+require 'gemology/fetch_store_job'
+require 'gemology/extract_metadata_job'
 
