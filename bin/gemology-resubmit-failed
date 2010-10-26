@@ -1,0 +1,28 @@
+#!/usr/bin/env ruby
+
+require 'gemology'
+require 'gemology/resque_job'
+
+usage ="Usage: #{File.basename( $0 )} number|all"
+count = ARGV.shift
+abort usage unless count  
+total = Resque.redis.llen( :failed )
+
+if count != 'all' then
+  count = Float( count ).to_i
+  abort usage unless count > 0
+else
+  count = total
+end
+
+puts "Resubmitting #{count} of #{total} jobs"
+
+count.times do 
+  item = Resque.decode( Resque.redis.lpop( :failed ) )
+  classname = item['payload']['class'].to_s.split("::").last
+  gem_name  = (item['payload']['args']).first
+  queue     = item['queue']
+  job_class = ::Gemology::ResqueJob.get_subclass( classname )
+  Resque.enqueue( job_class, gem_name )
+  puts "  sumitted #{gem_name} to #{classname}"
+end
