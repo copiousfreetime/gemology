@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require 'gemology'
+
+job_name = ARGV.shift
+gem_name = ARGV.shift
+
+usage ="Usage: #{File.basename( $0 )} #{::Gemology::ResqueJob.job_names.join("|")}"  
+abort usage unless (job_name && gem_name)
+abort usage unless ::Gemology::ResqueJob.valid_job_name?( job_name )
+
+job_class = ::Gemology::ResqueJob.get_subclass( job_name )
+Resque.enqueue( job_class, gem_name )
+
