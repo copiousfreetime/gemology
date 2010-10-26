@@ -5,7 +5,7 @@ require 'cloudfiles'
 require 'digest/md5'
 
 module Gemology
-  module ResqueueJobs
+  module ResqueJobs
     class FetchStore < ResqueJob
 
       def self.queue
