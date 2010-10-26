@@ -13,7 +13,7 @@ module Gemology
       end
 
       def self.perform( gemfile )
-        job = FetchStoreJob.new( gemfile )
+        job = FetchStore.new( gemfile )
         job.run
       end
 
@@ -27,15 +27,15 @@ module Gemology
         fname = File.basename( @gemfile )
 
         logger.info "Fetching #{@gemfile}"
-        contents = @client.gemfile( gemfile ) 
+        contents = @client.gemfile( @gemfile ) 
 
         logger.info "Storing #{fname}"
         obj = rubygems_container.create_object( fname )
 
         if obj.write( contents ) then
-          logger.info "Finished fetch and store of #{@uri}"
+          logger.info "Finished fetch and store of #{@gemfile}"
         else
-          logger.error "Woops, had a problem, not sure what with #{@uri}"
+          logger.error "Woops, had a problem, not sure what with #{@gemfile}"
         end
       rescue => e
         logger.error e

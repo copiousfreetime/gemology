@@ -1,7 +1,6 @@
 require 'sinatra'
 require 'gemology/logable'
-require 'gemology/fetch_store_job'
-require 'resque'
+require 'gemology/resque_job'
 require 'json'
 
 module Gemology::Webhook
@@ -40,9 +39,9 @@ module Gemology::Webhook
 
     def submit_job( json )
       data = ::JSON.parse( json )
-      uri = data['gem_uri']
-      logger.info "Submitting #{uri}"
-      Resque.enqueue( ::Gemology::FetchStoreJob,  uri )
+      gemfile = File.basename( URI.parse( data['gem_uri'] ).path )
+      logger.info "Submitting #{gemfile}"
+      Resque.enqueue( ::Gemology::ResqueJobs::FetchStore,  gemfile )
     end
   end
 end
