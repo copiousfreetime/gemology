@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+require 'gemology/rubygems_client'
+
+gemfile = ARGV.shift
+c = Gemology::RubygemsClient.new
+uri = c.gemfile_uri( gemfile )
+md5 = c.etag_of_gemfile( gemfile )
+puts "#{uri} => #{md5}"
