@@ -1,7 +1,6 @@
 require 'gemology/spec_lite'
 require 'gemology/resque_job'
 require 'gemology/cloud_container'
-require 'httparty'
 require 'cloudfiles'
 require 'digest/md5'
 
@@ -13,30 +12,30 @@ module Gemology
       "fetch_store"
       end
 
-      def self.perform( url )
-        job = FetchStoreJob.new( url )
+      def self.perform( gemfile )
+        job = FetchStoreJob.new( gemfile )
         job.run
       end
 
-
-      def initialize( url )
-        @url = url 
-        logger.info "Starting fetch and store of #{@url}"
+      def initialize( gemfile )
+        @client = RubygemsClient.new
+        @gemfile = gemfile
+        logger.info "Starting fetch and store of #{@gemfile}"
       end
 
       def run
-        fname = File.basename( URI.parse( @url ).path )
+        fname = File.basename( @gemfile )
 
-        logger.info "Fetching #{@url}"
-        resp = HTTParty.get( @url )
+        logger.info "Fetching #{@gemfile}"
+        contents = @client.gemfile( gemfile ) 
 
         logger.info "Storing #{fname}"
         obj = rubygems_container.create_object( fname )
 
-        if obj.write( resp.body ) then
-          logger.info "Finished fetch and store of #{@url}"
+        if obj.write( contents ) then
+          logger.info "Finished fetch and store of #{@uri}"
         else
-          logger.error "Woops, had a problem, not sure what with #{@url}"
+          logger.error "Woops, had a problem, not sure what with #{@uri}"
         end
       rescue => e
         logger.error e

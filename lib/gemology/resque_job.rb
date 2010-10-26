@@ -11,6 +11,10 @@ module Gemology
       %w[ "resque_jobs" ]
     end
 
+    def self.gem_base_urj
+      "http://rubygems.org/gems"
+    end
+
     def self.job_names
       derivatives.keys.reject { |c| c.to_s =~ /::/ }
     end
