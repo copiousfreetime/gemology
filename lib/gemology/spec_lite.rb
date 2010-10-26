@@ -14,10 +14,12 @@ module Gemology
     attr_reader :name
     attr_reader :version
     attr_reader :platform
+    attr_reader :platform_string
 
     def initialize( name, version, platform = Gem::Platform::RUBY )
       @name = name
       @version = Gem::Version.new( version )
+      @platform_string = platform
       @platform = Gem::Platform.new( platform )
     end
 
@@ -25,7 +27,7 @@ module Gemology
       if platform == Gem::Platform::RUBY or platform.nil? then
         name_version
       else
-        "#{name_version}-#{platform}"
+        "#{name_version}-#{platform_string}"
       end
     end
     alias :to_s :full_name
@@ -50,7 +52,7 @@ module Gemology
     # Convert to the array format used by rubygems itself
     #
     def to_rubygems_a
-      [ name, version, platform.to_s ]
+      [ name, version, platform_string ]
     end
 
     #
