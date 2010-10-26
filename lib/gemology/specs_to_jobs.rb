@@ -1,4 +1,3 @@
-require 'net/http'
 require 'gemology/resque_job'
 require 'gemology/rubygems_client'
 
@@ -24,8 +23,11 @@ module Gemology
       count = 0
       s.each do |a|
         spec = ::Gemology::SpecLite.new( *a )
-        #Resqeue.enqueue( ResqueJob.get_classname( job ), spec.file_name )
+        ::Resque.enqueue( ResqueJob.get_subclass( job ), spec.file_name )
         count += 1
+        if count % 5000 == 0 then
+          logger.info " #{count} #{job} jobs submitted"
+        end
       end
       logger.info "Finished submitting #{count} #{job} jobs"
     end

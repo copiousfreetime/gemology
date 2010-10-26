@@ -1,4 +1,5 @@
 require 'pluginfactory'
+require 'resque'
 require 'gemology/logable'
 require 'gemology/cloud_container'
 
@@ -17,6 +18,10 @@ module Gemology
 
     def self.job_names
       derivatives.keys.reject { |c| c.to_s =~ /::/ }
+    end
+
+    def self.valid_job_name?( job_name )
+      job_names.include?( job_name )
     end
 
     def rubygems_container
