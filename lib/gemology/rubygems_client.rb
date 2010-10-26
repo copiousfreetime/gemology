@@ -79,7 +79,9 @@ module Gemology
       when Net::HTTPRedirection 
         return head(response['location'], limit - 1)
       else
-        response.error!
+        msg = "#{response.code} retrieving #{uri}"
+        logger.error( msg )
+        raise msg
       end
     end 
   end

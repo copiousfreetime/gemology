@@ -38,7 +38,7 @@ module Gemology
           logger.error "Woops, had a problem, not sure what with #{@gemfile}"
         end
       rescue => e
-        logger.error e
+        logger.error e.message
         e.backtrace.each { |b| logger.debug b }
         raise e
       end

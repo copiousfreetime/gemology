@@ -44,7 +44,7 @@ module Gemology
         logger.warn "#{@gemfile} does not exist in cloudfiles container"
         requeue( @gemfile )
       rescue => e
-        logger.error e
+        logger.error e.message
         e.backtrace.each { |b| logger.debug b }
         raise e
       end
