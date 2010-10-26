@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+require 'gemology/specs_to_jobs'
+
+to_jobs = ::Gemology::SpecsToJobs.new
+job_class = ARGV.shift
+
+usage ="Usage: #{File.basename( $0 )} #{to_jobs.destinations.join("|")}"  
+abort usage unless job_class
+abort usage unless to_jobs.valid_destination?( job_class )
+
+to_jobs.submit_to( job_class )
+
