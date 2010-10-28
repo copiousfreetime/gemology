@@ -1,5 +1,4 @@
 require 'gemology/spec_lite'
-require 'gemology/resque_job'
 require 'gemology/cloud_container'
 require 'gemology/rubygems_client'
 require 'httparty'

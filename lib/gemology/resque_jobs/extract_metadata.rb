@@ -1,4 +1,3 @@
-require 'gemology/resque_job' 
 require 'gemology/spec_lite'
 require 'cloudfiles'
 require 'digest/md5'

@@ -19,16 +19,12 @@ module Gemology
     def initialize( name, version, platform = Gem::Platform::RUBY )
       @name = name
       @version = Gem::Version.new( version )
-      @platform_string = platform
+      @platform_string = platform.to_s
       @platform = Gem::Platform.new( platform )
     end
 
     def full_name
-      if platform == Gem::Platform::RUBY or platform.nil? then
-        name_version
-      else
-        "#{name_version}-#{platform_string}"
-      end
+      "#{name}-#{version_platform}"
     end
     alias :to_s :full_name
 
@@ -44,8 +40,16 @@ module Gemology
       "#{name}-#{version}"
     end
 
+    def version_platform
+      if platform == Gem::Platform::RUBY or platform.nil? then
+        version.to_s
+      else
+        "#{version}-#{platform_string}"
+      end
+    end
+
     def to_a
-      [ name, version.to_s, platform.to_s ]
+      [ name, version.to_s, platform_string ]
     end
 
     # 
@@ -61,10 +65,13 @@ module Gemology
     def <=>(other)
       return 0 if other.object_id == self.object_id
       other = coerce( other )
-      [ :name, :version, :platform ].each do |method|
-        result = ( self.send( method ).<=>( other.send( method ) ) )
+
+      [ :name, :version, :platform_string ].each do |method|
+        us, them = self.send( method ), other.send( method )
+        result = us.<=>( them )
         return result unless 0 == result
       end
+
       return 0
     end
 
@@ -76,7 +83,7 @@ module Gemology
       return (other and 
               self.name == other.name and
               self.version.to_s == other.version.to_s and
-              self.platform == other.platform )
+              self.platform_string == other.platform_string )
     end
 
     private
@@ -86,8 +93,8 @@ module Gemology
         other
       elsif other.respond_to?( :name ) and 
             other.respond_to?( :version ) and 
-            other.respond_to?( :platform ) then
-        SpecLite.new( other.name, other.version, other.platform )
+            other.respond_to?( :platform_string ) then
+        SpecLite.new( other.name, other.version, other.platform_string )
       else
         return false
       end
