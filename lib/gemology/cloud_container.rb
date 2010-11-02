@@ -1,3 +1,4 @@
+require 'cloudfiles'
 module Gemology
   class CloudContainer
 

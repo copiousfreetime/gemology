@@ -19,3 +19,4 @@ doc
 pkg
 work
 db/*.db
+tmp/

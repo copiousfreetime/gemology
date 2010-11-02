@@ -1,0 +1,94 @@
+#!/usr/bin/env ruby
+
+require 'gemology/cloud_container'
+
+md5sum_file = ARGV.shift
+abort "Usage: #{File.basename( $0 )} file.md5" unless md5sum_file and File.readable?( md5sum_file )
+
+def load_to_set( fname )
+  s = Set.new
+  IO.readlines( fname ).each do |l|
+    s << l.strip
+  end
+  return s
+end
+
+
+
+puts "Loading md5sums"
+gems_dir  = File.dirname( File.expand_path( md5sum_file ) )
+md5       = Hash.new
+
+File.open( md5sum_file ) do |f|
+  f.each do |line|
+    checksum, filename = line.split
+    md5[filename] = checksum
+  end
+end
+
+puts "  * #{md5.size} md5 checksums loaded"
+rubyforge_gems = load_to_set( 'rubyforge-gems.txt' )
+not_in_rubyforge_db = Set.new( md5.keys ) - rubyforge_gems
+not_in_rubyforge_db.each { |x| md5.delete( x ) }
+puts "  * #{md5.size} md5 checksums left after filtering out gems not in rubyforge db"
+
+md5_files = Set.new( md5.keys )
+container = Gemology::CloudContainer.new.rubygems
+puts "Checking #{md5_files.size} files against the #{container.count} files in the container"
+
+def fetch_container_info( container )
+  objs = Hash.new
+  last = nil
+  limit = 10_000
+  loop do
+    info  = container.list_objects_info( :marker => last, :limit => limit )
+    break if info.size == 0
+    first = info.keys.sort.first
+    last  = info.keys.sort.last
+    objs.merge!( info )
+
+    puts "  * Fetched (#{info.size}) #{first} .. #{last} -> #{objs.size} so far"
+    break if objs.size >= container.count
+  end
+  return objs
+end
+
+container_info   = fetch_container_info( container )
+not_in_container = md5_files - container_info.keys
+puts "#{not_in_container.size} files found that are on rubyforge.org but not in rubygems.org"
+
+def dump_to( enumerable, fname )
+  File.open( fname, "w+" ) do |f|
+    enumerable.each do |x|
+      if Array === x then
+        f.puts x.join("\t")
+      else
+        f.puts x
+      end
+    end
+  end
+end
+dump_to( not_in_container, "missing-from-rubygems.txt" )
+
+
+checkable = md5_files & container_info.keys
+puts "Doing md5sum check on #{checkable.size} files..."
+
+mismatch = []
+count = 0
+checkable.each do |gemname|
+  obj = container_info[ gemname ]
+  rf_md5 = md5[gemname]
+  gc_md5 = obj[:hash]
+  if rf_md5 != gc_md5 then
+    mismatch << [ gemname, rf_md5, gc_md5 ]
+  end
+  count += 1
+  if count % 1000 == 0 then
+    puts " * processed #{count}"
+  end
+end
+puts " * processed #{count}"
+puts "Found #{mismatch.size} files whose checksums mismatched"
+dump_to( mismatch, "md5sum-mismatch.txt" )
+
