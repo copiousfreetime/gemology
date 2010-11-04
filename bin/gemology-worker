@@ -1,8 +1,6 @@
 #!/usr/bin/env ruby
 
 require 'gemology'
-require 'resque'
-
 Process.daemon
 
 begin 

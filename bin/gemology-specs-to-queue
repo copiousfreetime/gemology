@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'gemology/specs_to_jobs'
+require 'gemology'
 
 to_jobs = ::Gemology::SpecsToJobs.new
 job_class = ARGV.shift

@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 require 'gemology'
-require 'gemology/resque_job'
 
 usage ="Usage: #{File.basename( $0 )} number|all"
 count = ARGV.shift

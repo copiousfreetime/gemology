@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'gemology/cloud_container'
+require 'gemology'
 
 md5sum_file = ARGV.shift
 abort "Usage: #{File.basename( $0 )} file.md5" unless md5sum_file and File.readable?( md5sum_file )
