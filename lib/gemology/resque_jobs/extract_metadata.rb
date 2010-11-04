@@ -1,12 +1,3 @@
-require 'gemology/spec_lite'
-require 'cloudfiles'
-require 'digest/md5'
-require 'digest/sha1'
-require 'rubygems/format'
-require 'fileutils'
-require 'gemology/gem_version_data'
-require 'gemology/datastore'
-
 module Gemology
   module ResqueJobs
     class ExtractMetadata < ResqueJob

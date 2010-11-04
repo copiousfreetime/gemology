@@ -1,10 +1,3 @@
-require 'gemology/spec_lite'
-require 'gemology/cloud_container'
-require 'gemology/rubygems_client'
-require 'httparty'
-require 'cloudfiles'
-require 'digest/md5'
-
 module Gemology
   module ResqueJobs
     class CheckFetched < ResqueJob

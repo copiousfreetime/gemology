@@ -1,4 +1,3 @@
-require 'gemology/logable'
 module Gemology::Webhook
   class Logger
 

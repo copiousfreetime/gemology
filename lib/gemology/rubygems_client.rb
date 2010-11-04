@@ -1,6 +1,3 @@
-require 'net/http'
-require 'gemology/logable'
-
 module Gemology
   class RubygemsClient
     include Logable

@@ -1,8 +1,3 @@
-require 'sinatra'
-require 'gemology/logable'
-require 'gemology/resque_job'
-require 'json'
-
 module Gemology::Webhook
   # A sinatra app for accepting webhook posts from rubygems.org and 
   #

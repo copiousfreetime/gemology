@@ -1,14 +1,13 @@
-require 'cloudfiles'
 module Gemology
   class CloudContainer
-
-    def self.defaults
-      @defaults ||= eval( IO.read( File.expand_path( "~/.gemologyrc" ) ) )
+    include Configurability
+    def self.config_key
+      :cloud_container
     end
 
     def initialize( opts = {} )
-      @username = opts['username'] || CloudContainer.defaults['username']
-      @api_key  = opts['api_key']  || CloudContainer.defaults['api_key']
+      @username = opts['username'] || config.username
+      @api_key  = opts['api_key']  || config.api_key
       @cf = ::CloudFiles::Connection.new( :username => @username,
                                           :api_key  => @api_key )
     end

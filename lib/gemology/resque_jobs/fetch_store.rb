@@ -1,8 +1,3 @@
-require 'gemology/spec_lite'
-require 'gemology/cloud_container'
-require 'cloudfiles'
-require 'digest/md5'
-
 module Gemology
   module ResqueJobs
     class FetchStore < ResqueJob

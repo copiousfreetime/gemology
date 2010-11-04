@@ -1,5 +1,3 @@
-require 'gemology/webhook'
-require 'resque/server'
 
 module Gemology
   class Web

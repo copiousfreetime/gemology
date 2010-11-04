@@ -1,6 +1,3 @@
-require 'gemology/resque_job'
-require 'gemology/rubygems_client'
-
 module Gemology
   class SpecsToJobs
     include Logable

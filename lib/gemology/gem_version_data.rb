@@ -1,4 +1,3 @@
-require 'stringio'
 module Gemology
   class GemVersionData
     include ::Gemology::Logable

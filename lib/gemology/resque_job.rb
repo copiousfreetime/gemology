@@ -1,7 +1,3 @@
-require 'pluginfactory'
-require 'resque'
-require 'gemology/logable'
-require 'gemology/cloud_container'
 
 module Gemology
   class ResqueJob
@@ -30,7 +26,4 @@ module Gemology
   end
 end
 
-require 'gemology/resque_jobs/fetch_store'
-require 'gemology/resque_jobs/extract_metadata'
-require 'gemology/resque_jobs/check_fetched'
 

@@ -1,4 +1,3 @@
-require 'logging'
 module Gemology
 
   def self.app_name

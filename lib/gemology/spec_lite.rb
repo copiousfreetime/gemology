@@ -1,6 +1,3 @@
-require 'rubygems/platform'
-require 'rubygems/version'
-
 module Gemology
   #
   # A lightweight version of a gemspec that only responds to name, version,
