@@ -5,9 +5,17 @@ module Gemology
       :cloud_container
     end
 
+    def self.configure( config )
+      @config = config
+    end
+
+    def self.config
+      @config
+    end
+
     def initialize( opts = {} )
-      @username = opts['username'] || config.username
-      @api_key  = opts['api_key']  || config.api_key
+      @username = opts['username'] || CloudContainer.config.username
+      @api_key  = opts['api_key']  || CloudContainer.config.api_key
       @cf = ::CloudFiles::Connection.new( :username => @username,
                                           :api_key  => @api_key )
     end
