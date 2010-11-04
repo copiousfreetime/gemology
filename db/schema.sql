@@ -1,12 +1,12 @@
 -- 
 CREATE TABLE  gems (
-    id      INTEGER PRIMARY KEY,
-    name    VARCHAR(128) UNIQUE
+    id      INTEGER PRIMARY KEY NOT NULL,
+    name    VARCHAR(128) NOT NULL UNIQUE
 );
 
 CREATE TABLE  gem_versions ( 
-    id                              INTEGER PRIMARY KEY,
-    gem_id                          INTEGER REFERENCES gems(id),
+    id                              INTEGER PRIMARY KEY NOT NULL,
+    gem_id                          INTEGER REFERENCES gems(id) NOT NULL,
     full_name                       TEXT NOT NULL UNIQUE,
     md5                             VARCHAR(32) NOT NULL, -- of the .gem file
     sha1                            VARCHAR(40) NOT NULL, -- of the .gem file
@@ -31,40 +31,50 @@ CREATE UNIQUE INDEX  gem_versions_platform_uidx ON gem_versions( gem_id, version
 CREATE INDEX  gem_versions_full_name_idx ON gem_versions( full_name );
 
 CREATE TABLE  gem_version_raw_specifications( 
-    id              INTEGER PRIMARY KEY,
-    gem_version_id  INTEGER REFERENCES gem_versions( id ),
+    id              INTEGER PRIMARY KEY NOT NULL,
+    gem_version_id  INTEGER REFERENCES gem_versions( id ) NOT NULL,
     ruby            TEXT NOT NULL
 );
 CREATE INDEX  gem_version_raw_specifications_gem_version_id_idx ON gem_version_raw_specifications( gem_version_id );
 
+CREATE TABLE dependencies(
+    id              INTEGER PRIMARY KEY NOT NULL,
+    operator        VARCHAR(3) NOT NULL,
+    gem_name        TEXT NOT NULL,
+    version         VARCHAR(16) NOT NULL
+);
+
 CREATE TABLE  gem_version_dependencies( 
-    id              INTEGER PRIMARY KEY,
-    gem_version_id  INTEGER REFERENCES gem_versions( id ),
-    dependency      TEXT NOT NULL
+    id              INTEGER PRIMARY KEY NOT NULL,
+    gem_version_id  INTEGER REFERENCES gem_versions( id ) NOT NULL,
+    dependency_id   INTEGER REFERENCES dependencies( id ) NOT NULL
 );
 CREATE INDEX  gem_version_dependencies_gem_version_id_idx ON gem_version_dependencies( gem_version_id );
 
-CREATE TABLE  licenses (
-    id          INTEGER PRIMARY KEY,
-    name        VARCHAR(64) NOT NULL UNIQUE
+CREATE TABLE licenses (
+    id          INTEGER PRIMARY KEY NOT NULL,
+    name        VARCHAR(64) NOT NULL,
+    content     TEXT NOT NULL UNIQUE,
+    sha1        VARCHAR(40) NOT NULL UNIQUE
 );
 
-CREATE TABLE  gem_version_licenses (
-    id                  INTEGER PRIMARY KEY,
-    gem_version_id      INTEGER REFERENCES gem_versions( id ) NOT NULL,
-    license_id          INTEGER REFERENCES licenses( id ) NOT NULL
+CREATE TABLE gem_version_licenses (
+    id              INTEGER PRIMARY KEY NOT NULL,
+    gem_version_id  INTEGER REFERENCES gem_versions(id) NOT NULL,
+    meta_license_id INTEGER REFERENCES licenses(id) NOT NULL,
+    file_license_id INTEGER REFERENCES licenses(id) NOT NULL
 );
-CREATE INDEX  gem_version_licenses_gem_version_id_idx ON gem_version_licenses( gem_version_id );
-
 
 CREATE TABLE  authors (
-    id          INTEGER PRIMARY KEY,
+    id          INTEGER PRIMARY KEY NOT NULL,
     name        TEXT UNIQUE NOT NULL
 );
+
+
 CREATE TABLE  gem_version_authors (
-    id              INTEGER PRIMARY KEY,
-    gem_version_id  INTEGER REFERENCES gem_versions(id),
-    author_id       INTEGER REFERENCES authors(id),
+    id              INTEGER PRIMARY KEY NOT NULL,
+    gem_version_id  INTEGER REFERENCES gem_versions(id) NOT NULL,
+    author_id       INTEGER REFERENCES authors(id) NOT NULL,
     listed_order    INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX  gem_version_authors_uidx ON gem_version_authors( gem_version_id, author_id );
@@ -77,8 +87,8 @@ CREATE TABLE  emails (
 
 CREATE TABLE  gem_version_emails (
     id              INTEGER PRIMARY KEY,
-    gem_version_id  INTEGER REFERENCES gem_versions(id),
-    email_id        INTEGER REFERENCES emails(id),
+    gem_version_id  INTEGER REFERENCES gem_versions(id) NOT NULL,
+    email_id        INTEGER REFERENCES emails(id) NOT NULL,
     listed_order    INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX  gem_version_emails_uidx ON gem_version_emails( gem_version_id, email_id );
@@ -89,13 +99,13 @@ CREATE TABLE  requirements(
 );
 CREATE TABLE  gem_version_requirements (
     id                  INTEGER PRIMARY KEY,
-    gem_version_id      INTEGER REFERENCES gem_versions( id ),
-    requirement_id      INTEGER REFERENCES requrements( id )
+    gem_version_id      INTEGER REFERENCES gem_versions( id ) NOT NULL,
+    requirement_id      INTEGER REFERENCES requrements( id ) NOT NULL
 );
 CREATE UNIQUE INDEX  gem_version_requirementss_uidx ON gem_version_requirements( gem_version_id, requirement_id);
   
 CREATE TABLE  gem_version_files( 
-    id                  INTEGER PRIMARY KEY,
+    id                  INTEGER PRIMARY KEY NOT NULL,
     gem_version_id      INTEGER REFERENCES gem_versions(id) NOT NULL,
     filename            TEXT NOT NULL,
     sha1                VARCHAR( 40 ) NOT NULL,
