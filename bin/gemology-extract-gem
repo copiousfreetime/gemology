@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+require 'gemology'
+
+gem_name = ARGV.shift
+
+usage ="Usage: #{File.basename( $0 )} gem-version.gem"  
+abort usage unless gem_name
+
+::Gemology::ResqueJobs::ExtractMetadata.perform( gem_name )
+

@@ -41,18 +41,13 @@ module Gemology
 
     def self.open(&block)
       raise ArgumentError, "A block is required for Db.open" unless block_given?
-      ::Sequel.connect( self.config.to_hash ) do |db|
+      ::Sequel.connect( self.config.to_hash.merge( :logger => Logger.new($stderr) )) do |db|
         yield db
       end
     end
 
     def self.connection
-      ::Sequel.connect( self.config.to_hash )
-    end
-
-    def add_gem_version_data( gvd )
-      g = Db::Gem.find_or_create( :name => gvd.name )
-      g.add_version_data( gvd )
+      ::Sequel.connect( self.config.to_hash.merge( :logger => Logger.new( $stderr ) ) )
     end
   end
 end

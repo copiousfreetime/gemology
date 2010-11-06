@@ -4,6 +4,7 @@ module Gemology
 
     attr_reader :md5
     attr_reader :sha1
+    attr_reader :specification
 
     def initialize( gemfile )
       @gemfile       = gemfile
@@ -28,6 +29,10 @@ module Gemology
 
     def version
       @specification.version
+    end
+
+    def date
+      @specification.date
     end
 
     def prerelease?
@@ -66,9 +71,20 @@ module Gemology
       @specification.homepage
     end
 
-    # The string requirements that are not used by anything
+    def dependencies
+      @specification.dependencies
+    end
+
     def requirements
       @specification.requirements
+    end
+
+    def authors
+      @specification.authors
+    end
+
+    def emails
+      [@specification.email].flatten
     end
 
     def rubyforge_project
@@ -104,6 +120,11 @@ module Gemology
         end
       end
       return nil
+    end
+
+    def store_to_db( db )
+      g = Db::Gem.find_or_create( :name => gem_name )
+      g.add_version_data( self )
     end
 
     def with_data( &block )

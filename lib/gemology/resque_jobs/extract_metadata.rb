@@ -38,7 +38,9 @@ module Gemology
           local_name = save_to_local_file( @gemfile )
           metadata   = ::Gemology::GemVersionData.new( local_name )
           ::Gemology::Db.open do |db|
-            db.add_gem_version_data( metadata )
+            db.transaction do |conn|
+              metadata.store_to_db( conn )
+            end
           end
         rescue => e
           logger.error e

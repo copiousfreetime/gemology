@@ -19,6 +19,7 @@ module Gemology
         gv = Db::GemVersion[ :full_name => gvd.full_name ]
         raise Gemology::Error, "GemVersion #{gvd.full_name} is already in the database" if gv
         gv = Db::GemVersion.new do |gv|
+          gv.full_name                      = gvd.full_name
           gv.md5                            = gvd.md5
           gv.sha1                           = gvd.sha1
           gv.version                        = gvd.version.to_s
@@ -44,11 +45,26 @@ module Gemology
         gv.add_ordered_emails( gvd.emails )
         gv.add_requirements( gvd.requirements )
         gv.add_dependencies( gvd.dependencies )
-        gv.add_licenses( gvd.licenses )
-        gv.add_gem_version_raw_specification( GemVersionRawSpecification.new( :ruby => gvd.specification.to_ruby ) )
-        gv.add_files( gvd.files )
+        #gv.add_licenses( gvd.licenses )
+        gv.gem_version_raw_specification = GemVersionRawSpecification.new( :ruby => gvd.specification.to_ruby )
+        #gv.add_files( gvd.files )
 
         return gv
+      end
+
+      def add_dependencies( deps )
+        deps.each do |dep|
+          h = { :gem_name        => dep.name,
+                :is_prerelease   => dep.prerelease?,
+                :dependency_type => dep.type.to_s }
+          # Not sure if this is ever more than one, but it has the potential to
+          # be, so coding for that
+          dep.requirement.requirements.each do |r|
+            f = h.merge( :operator => r.first, :version => r.last.to_s )
+            d = Db::Dependency.find_or_create( f )
+            add_dependency( d )
+          end
+        end
       end
 
       def add_ordered_authors( authors )
