@@ -3,6 +3,20 @@ module Gemology
   class ResqueJob
     include PluginFactory
     include Logable
+    include Configurability
+
+    def self.config_key
+      :resque
+    end
+
+    def self.configure( config )
+      @config = config
+    end
+
+    def self.config
+      @config
+    end
+
 
     def self.derivative_dirs
       %w[ "resque_jobs" ]

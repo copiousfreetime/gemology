@@ -1,6 +1,7 @@
 module Gemology
-  module Db    
+  module Db 
     include Configurability
+
     def self.config_key
       :datastore
     end
@@ -14,8 +15,7 @@ module Gemology
     end
 
     def self.init
-      if not defined? @connection then
-        @connection = ::Sequel.connect( self.config.to_hash )
+      open do |db|
         load_models
       end
     end
@@ -37,6 +37,22 @@ module Gemology
         require 'gem_version_raw_specification'
         require 'gem_version_requirements'
       end
+    end
+
+    def self.open(&block)
+      raise ArgumentError, "A block is required for Db.open" unless block_given?
+      ::Sequel.connect( self.config.to_hash ) do |db|
+        yield db
+      end
+    end
+
+    def self.connection
+      ::Sequel.connect( self.config.to_hash )
+    end
+
+    def add_gem_version_data( gvd )
+      g = Db::Gem.find_or_create( :name => gvd.name )
+      g.add_version_data( gvd )
     end
   end
 end

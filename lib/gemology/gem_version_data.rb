@@ -2,17 +2,93 @@ module Gemology
   class GemVersionData
     include ::Gemology::Logable
 
+    attr_reader :md5
+    attr_reader :sha1
+
     def initialize( gemfile )
+      @gemfile       = gemfile
       @data          = StringIO.open( IO.read( gemfile ), "r" )
       @file_hashes   = nil
       @format        = with_data{ |data| ::Gem::Format.from_io( data ) }
       @specification = @format.spec 
+      @sha1          = with_data{ |data| ::Digest::SHA1.hexdigest( data.string ) }
+      @md5           = with_data{ |data| ::Digest::MD5.hexdigest( data.string  ) }
 
-      @gem_sha1      = with_data{ |data| ::Digest::SHA1.hexdigest( data.string ) }
-      logger.info "#{@specification.full_name} SHA1 : #{@gem_sha1}"
+      calculate_file_hashes( @format )
+    end
 
-      @gem_md5       = with_data{ |data| ::Digest::MD5.hexdigest( data.string  ) }
-      logger.info "#{@specification.full_name} MD5  : #{@gem_md5}"
+    # The name of the gem
+    def gem_name
+      @specification.name
+    end
+
+    def full_name
+      @specification.full_name
+    end
+
+    def version
+      @specification.version
+    end
+
+    def prerelease?
+      @specification.version.prerelease?
+    end
+
+    def platform
+      @specification.platform
+    end
+
+    def required_rubygems_version
+      @specification.required_rubygems_version
+    end
+
+    def required_ruby_version
+      @specification.required_ruby_version
+    end
+
+    def packaged_rubygems_version
+      @specification.rubygems_version
+    end
+
+    def packaged_specification_version
+      @specification.specification_version
+    end
+
+    def summary
+      @specification.summary
+    end
+
+    def description
+      @specification.description
+    end
+
+    def homepage
+      @specification.homepage
+    end
+
+    # The string requirements that are not used by anything
+    def requirements
+      @specification.requirements
+    end
+
+    def rubyforge_project
+      @specification.rubyforge_project
+    end
+
+    def autorequire
+      @specification.autorequire
+    end
+
+    def signing_key
+      @specification.signing_key
+    end
+
+    def cert_chain
+      @specification.cert_chain
+    end
+
+    def post_install_message
+      @specification.post_install_message
     end
 
     def calculate_file_hashes( format )
@@ -21,10 +97,10 @@ module Gemology
 
       digests = { :sha1 => ::Digest::SHA1.new, :md5  => ::Digest::MD5.new }
       format.file_entries.each do |entry, file_data|
-        digests.each_pair do |k, digest|
+        digests.each_pair do |kind, digest|
           digest.reset
           digest << file_data
-          @file_hashes[entry][k] = digest.hexdigest
+          @file_hashes[entry][kind] = digest.hexdigest
         end
       end
       return nil

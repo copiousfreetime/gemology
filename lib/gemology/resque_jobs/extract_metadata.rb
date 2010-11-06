@@ -20,7 +20,7 @@ module Gemology
 
       def work_dir_for( gemfile )
         basename = File.basename( gemfile, ".gem" )
-        work_dir = ::Gemology::Paths.work_path( basename )
+        work_dir = File.join( ResqueJob.config.work_dir, basename )
         work_dir += ".#{Process.pid}"
         FileUtils.mkdir_p work_dir
         return work_dir 
@@ -37,8 +37,8 @@ module Gemology
         begin
           local_name = save_to_local_file( @gemfile )
           metadata   = ::Gemology::GemVersionData.new( local_name )
-          ::Gemology::Datastore.open( ::Gemology::Paths.db_path( "gemology.db" ) ) do |ds|
-            ds.add_gem_version_data( metadata )
+          ::Gemology::Db.open do |db|
+            db.add_gem_version_data( metadata )
           end
         rescue => e
           logger.error e

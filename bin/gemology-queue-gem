@@ -5,7 +5,7 @@ require 'gemology'
 job_name = ARGV.shift
 gem_name = ARGV.shift
 
-usage ="Usage: #{File.basename( $0 )} #{::Gemology::ResqueJob.job_names.join("|")}"  
+usage ="Usage: #{File.basename( $0 )} #{::Gemology::ResqueJob.job_names.join("|")} gem-version.gem"  
 abort usage unless (job_name && gem_name)
 abort usage unless ::Gemology::ResqueJob.valid_job_name?( job_name )
 
