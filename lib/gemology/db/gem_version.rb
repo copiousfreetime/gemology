@@ -37,6 +37,7 @@ module Gemology
           gv.autorequire                    = gvd.autorequire
           gv.has_signing_key                = gvd.signing_key != nil
           gv.has_cert_chain                 = gvd.cert_chain != nil
+          gv.has_extension                  = !gvd.extensions.empty?
           gv.post_install_message           = gvd.post_install_message
         end
         gem.add_gem_version( gv )
@@ -45,11 +46,30 @@ module Gemology
         gv.add_ordered_emails( gvd.emails )
         gv.add_requirements( gvd.requirements )
         gv.add_dependencies( gvd.dependencies )
-        #gv.add_licenses( gvd.licenses )
+        gv.add_meta_licenses( gvd.meta_licenses )
+        gv.add_file_licenses( gvd.file_licenses )
         gv.gem_version_raw_specification = GemVersionRawSpecification.new( :ruby => gvd.specification.to_ruby )
-        #gv.add_files( gvd.files )
+        gv.add_file_info( gvd.file_info )
 
         return gv
+      end
+
+      def add_meta_licenses( meta )
+        meta.each do |l|
+          add_license( :name => l, :content => l, :sha1 => Digest::SHA1.hexdigest( l ) )
+        end
+      end
+
+      def add_file_licenses( list )
+        list.each do |lic|
+          add_license( lic )
+        end
+      end
+
+      def add_file_info( file_info_list )
+        file_info_list.each do |file_info|
+          add_gem_version_file( Db::GemVersionFile.new( file_info.to_hash ) )
+        end
       end
 
       def add_dependencies( deps )

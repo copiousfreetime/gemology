@@ -31,6 +31,7 @@ CREATE TABLE  gem_versions (
     autorequire                     TEXT,
     has_signing_key                 BOOLEAN NOT NULL,
     has_cert_chain                  BOOLEAN NOT NULL,
+    has_extension                   BOOLEAN NOT NULL,
     post_install_message            TEXT
 );
 CREATE UNIQUE INDEX  gem_versions_platform_uidx ON gem_versions( gem_id, version, platform );
@@ -77,7 +78,7 @@ CREATE INDEX  gem_version_dependencies_gem_version_id_idx ON gem_version_depende
 DROP TABLE IF EXISTS licenses CASCADE;
 CREATE TABLE licenses (
     id          SERIAL PRIMARY KEY,
-    name        VARCHAR(64) NOT NULL,
+    name        VARCHAR(64),
     content     TEXT NOT NULL UNIQUE,
     sha1        VARCHAR(40) NOT NULL UNIQUE
 );
@@ -86,8 +87,7 @@ DROP TABLE IF EXISTS gem_version_licenses CASCADE;
 CREATE TABLE gem_version_licenses (
     id              SERIAL PRIMARY KEY,
     gem_version_id  INTEGER REFERENCES gem_versions(id) NOT NULL,
-    meta_license_id INTEGER REFERENCES licenses(id) NOT NULL,
-    file_license_id INTEGER REFERENCES licenses(id) NOT NULL
+    license_id      INTEGER REFERENCES licenses(id) NOT NULL
 );
 
 --
@@ -150,9 +150,13 @@ CREATE TABLE  gem_version_files(
     gem_version_id      INTEGER REFERENCES gem_versions(id) NOT NULL,
     filename            TEXT NOT NULL,
     sha1                VARCHAR( 40 ) NOT NULL,
+    size                INTEGER NOT NULL,
+    mode                INTEGER NOT NULL,
     is_test_file        BOOLEAN NOT NULL,
     is_extra_rdoc_file  BOOLEAN NOT NULL,
-    is_executable       BOOLEAN NOT NULL
+    is_executable_file  BOOLEAN NOT NULL,
+    is_extension_file   BOOLEAN NOT NULL,
+    is_license_file     BOOLEAN NOT NULL
 );
 
 CREATE INDEX  gem_version_files_filename_idx ON gem_version_files( filename );

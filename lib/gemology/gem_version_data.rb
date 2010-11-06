@@ -5,17 +5,19 @@ module Gemology
     attr_reader :md5
     attr_reader :sha1
     attr_reader :specification
+    attr_reader :file_info
 
     def initialize( gemfile )
       @gemfile       = gemfile
       @data          = StringIO.open( IO.read( gemfile ), "r" )
-      @file_hashes   = nil
+      @file_info     = []
+      @file_licenses = []
       @format        = with_data{ |data| ::Gem::Format.from_io( data ) }
       @specification = @format.spec 
       @sha1          = with_data{ |data| ::Digest::SHA1.hexdigest( data.string ) }
       @md5           = with_data{ |data| ::Digest::MD5.hexdigest( data.string  ) }
 
-      calculate_file_hashes( @format )
+      calculate_file_info( @format )
     end
 
     # The name of the gem
@@ -41,6 +43,10 @@ module Gemology
 
     def platform
       @specification.platform
+    end
+
+    def extensions
+      @specification.extensions
     end
 
     def required_rubygems_version
@@ -107,19 +113,60 @@ module Gemology
       @specification.post_install_message
     end
 
-    def calculate_file_hashes( format )
-      logger.info "Calculating individual file digests"
-      @file_hashes  = Hash.new{ |h,k| h[k] = Hash.new } # sha1/md5 sum of each file in the gem
+    def test_files
+      @specification.test_files
+    end
 
-      digests = { :sha1 => ::Digest::SHA1.new, :md5  => ::Digest::MD5.new }
+    def extra_rdoc_files
+      @specification.extra_rdoc_files
+    end
+
+    def extensions
+      @specification.extensions
+    end
+
+    def meta_licenses
+      @specification.licenses
+    end
+
+    def file_licenses
+      @file_licenses
+    end
+
+    def executables
+      @specification.executables.collect { |d| File.join(@specification.bindir, d ) }
+    end
+
+    def calculate_file_info( format )
+      logger.info "Calculating individual file information"
+      digest = ::Digest::SHA1.new
+
       format.file_entries.each do |entry, file_data|
-        digests.each_pair do |kind, digest|
-          digest.reset
-          digest << file_data
-          @file_hashes[entry][kind] = digest.hexdigest
+        digest.reset
+        entry_path = entry['path']
+        file_data = "" if entry['size'] == 0 # file_data is nil for 0 byte files
+        digest << file_data
+        sha1 = digest.hexdigest
+
+        fi = FileInfo.new( sha1, entry_path, entry['size'], entry['mode'] )
+        fi.is_test_file       = test_files.include?( entry_path )
+        fi.is_extra_rdoc_file = extra_rdoc_files.include?( entry_path )
+        fi.is_extension_file  = extensions.include?( entry_path )
+        fi.is_executable_file = executables.include?( entry_path )
+        fi.is_license_file    = is_license_file?( entry_path )
+        @file_info << fi
+
+        if fi.is_license_file then
+          @file_licenses << { :name => entry_path, :sha1 => sha1, :content => file_data }
         end
       end
       return nil
+    end
+
+    def is_license_file?( filename ) 
+      return true if filename =~ /license/i 
+      return true if filename =~ /copying/i
+      return false
     end
 
     def store_to_db( db )
@@ -130,6 +177,18 @@ module Gemology
     def with_data( &block )
       @data.rewind
       yield @data
+    end
+
+    FileInfo = ::Struct.new( :sha1, :filename, :size, :mode, 
+                              :is_test_file, :is_extra_rdoc_file, 
+                              :is_extension_file, :is_executable_file, 
+                              :is_license_file )
+    class FileInfo
+      def to_hash
+        h = {}
+        each_pair { |k,v| h[k.to_sym] = v }
+        return h
+      end
     end
   end
 end
