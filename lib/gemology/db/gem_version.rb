@@ -1,5 +1,6 @@
 module Gemology
   module Db
+    class GemVersionExistsError < ::Gemology::Error; end
     class GemVersion < ::Sequel::Model
       include ::Gemology::Logable
       many_to_one :gem
@@ -20,7 +21,7 @@ module Gemology
 
       def self.from_gem_version_data( gem, gvd )
         gv = Db::GemVersion[ :full_name => gvd.full_name ]
-        raise Gemology::Error, "GemVersion #{gvd.full_name} is already in the database" if gv
+        raise Gemology::Db::GemVersionExistsError, "GemVersion #{gvd.full_name} is already in the database" if gv
         gv = Db::GemVersion.new do |gv|
           gv.full_name                      = gvd.full_name
           gv.md5                            = gvd.md5

@@ -17,6 +17,11 @@ module Gemology
         logger.info "Starting fetch and store of #{@gemfile}"
       end
 
+      def queue_for_extraction( gemfile )
+        logger.info "#{gemfile} queued for ExtractMetadata"
+        ::Resque.enqueue( ResqueJob.get_subclass( "extractmetadata" ), gemfile )
+      end
+
       def run
         fname = File.basename( @gemfile )
 
@@ -28,6 +33,7 @@ module Gemology
 
         if obj.write( contents ) then
           logger.info "Finished fetch and store of #{@gemfile}"
+          queue_for_extraction( @gemfile )
         else
           logger.error "Woops, had a problem, not sure what with #{@gemfile}"
         end

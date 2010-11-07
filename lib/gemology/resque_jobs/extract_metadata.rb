@@ -48,6 +48,9 @@ module Gemology
         rescue ::NoSuchObjectException => e
           logger.error e.message
           logger.error "Not recording this as a failed job since we don't have the gem anyway"
+        rescue ::Gemology::Db::GemVersionExistsError => e
+          logger.error e.message
+          logger.error "This version must first be removed before rextracting, try 'gemology-remove-gem-version #{@gemfile}'"
         rescue => e
           logger.error e.message
           e.backtrace.each { |b| logger.debug b }
