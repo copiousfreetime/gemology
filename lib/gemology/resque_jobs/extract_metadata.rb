@@ -45,12 +45,14 @@ module Gemology
             logger.info "Storing #{@gemfile} in database"
             metadata.store_to_db( db )
           end
+        rescue ::NoSuchObjectException => e
+          logger.error e.message
+          logger.error "Not recording this as a failed job since we don't have the gem anyway"
         rescue => e
           logger.error e.message
           e.backtrace.each { |b| logger.debug b }
           raise e
         ensure
-
           if @workdir then
             logger.info "Cleaning up #{@workdir}"
             FileUtils.rm_rf @workdir
