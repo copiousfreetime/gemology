@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+require 'gemology'
+queues = ::Gemology::ResqueJob.derivative_classes.collect { |c| c.queue } << 'failed'
+
+usage ="Usage: #{File.basename( $0 )} #{queues.join("|")} number|all"
+
+queue = ARGV.shift
+abort usage unless queues.include?( queue )
+count = ARGV.shift
+abort usage unless count  
+
+if not Resque.redis.exists( queue ) then
+  queue = "queue:#{queue}"
+end
+abort "queue #{queue} does not exist" unless Resque.redis.exists( queue )
+
+total = Resque.redis.llen( queue )
+
+head = 0
+tail = total
+if count != 'all' then
+  count = Float( count ).to_i
+  abort usage unless count > 0
+  head = count
+else
+  tail = 0
+end
+
+puts "Draining #{count} of #{total} jobs"
+Resque.redis.ltrim( queue, head, tail )
+# remove the last element since ltrim 0 0 leaves the 0th element
+Resque.redis.lpop( queue ) if tail == 0
+puts "Done"
+
