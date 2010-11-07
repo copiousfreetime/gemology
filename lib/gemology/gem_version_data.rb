@@ -87,15 +87,15 @@ module Gemology
     end
 
     def requirements
-      flat_uniq_no_nils( @specification.requirements )
+      flat_uniq_strings_no_nils( @specification.requirements )
     end
 
     def authors
-      flat_uniq_no_nils( @specification.authors )
+      flat_uniq_strings_no_nils( @specification.authors )
     end
 
     def emails
-      flat_uniq_no_nils( @specification.email )
+      flat_uniq_strings_no_nils( @specification.email )
     end
 
     def rubyforge_project
@@ -184,11 +184,11 @@ module Gemology
       yield @data
     end
 
-    def flat_uniq_no_nils( list )
+    def flat_uniq_strings_no_nils( list )
       ol = []
       [ list ].flatten.each do |l|
         next if l.nil?
-        ol << l.strip
+        ol << l.to_s.strip
       end
       return ol.uniq
     end
