@@ -23,6 +23,7 @@ module Gemology
           gv.full_name                      = gvd.full_name
           gv.md5                            = gvd.md5
           gv.sha1                           = gvd.sha1
+          gv.size                           = gvd.size
           gv.version                        = gv.convert_to_utf8( gvd.version.to_s )
           gv.platform                       = gvd.platform.to_s
           gv.is_prerelease                  = gvd.prerelease?
@@ -88,6 +89,13 @@ module Gemology
         else
           from = find_encoding_of( str )
           from = "UTF-8" if from == "ASCII-8BIT"
+        end
+
+        # special case if it looks like it is US-ASCII to UTF-8 just force it,
+        # it is valid
+        if from == "US-ASCII" then
+          str.force_encoding( "UTF-8" )
+          return str
         end
 
         result = nil

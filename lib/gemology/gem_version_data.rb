@@ -4,6 +4,7 @@ module Gemology
 
     attr_reader :md5
     attr_reader :sha1
+    attr_reader :size
     attr_reader :specification
     attr_reader :file_info
 
@@ -12,7 +13,7 @@ module Gemology
     end
 
     def initialize( data )
-      logger.info "data is #{data.encoding.name}"
+      @size          = data.bytesize
       @data          = StringIO.open( data, "r" )
       @file_info     = []
       @file_licenses = []

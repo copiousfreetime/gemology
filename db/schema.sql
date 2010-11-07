@@ -16,6 +16,7 @@ CREATE TABLE  gem_versions (
     full_name                       TEXT NOT NULL UNIQUE,
     md5                             VARCHAR(32) NOT NULL, -- of the .gem file
     sha1                            VARCHAR(40) NOT NULL, -- of the .gem file
+    size                            INTEGER NOT NULL,
     version                         VARCHAR(128) NOT NULL,
     platform                        VARCHAR(128) NOT NULL,
     is_prerelease                   BOOLEAN NOT NULL,
