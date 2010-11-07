@@ -87,7 +87,7 @@ module Gemology
     end
 
     def requirements
-      @specification.requirements
+      flat_uniq_no_nils( @specification.requirements )
     end
 
     def authors
