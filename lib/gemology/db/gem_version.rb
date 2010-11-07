@@ -1,6 +1,7 @@
 module Gemology
   module Db
     class GemVersion < ::Sequel::Model
+      include ::Gemology::Logable
       many_to_one :gem
       one_to_one  :gem_version_raw_specification
       one_to_many :gem_version_licenses
@@ -22,23 +23,23 @@ module Gemology
           gv.full_name                      = gvd.full_name
           gv.md5                            = gvd.md5
           gv.sha1                           = gvd.sha1
-          gv.version                        = gvd.version.to_s
+          gv.version                        = gv.convert_to_utf8( gvd.version.to_s )
           gv.platform                       = gvd.platform.to_s
           gv.is_prerelease                  = gvd.prerelease?
           gv.release_date                   = gvd.date
           gv.required_rubygems_version      = gvd.required_rubygems_version.to_s
           gv.required_ruby_version          = gvd.required_ruby_version.to_s
-          gv.packaged_rubygems_version      = gvd.packaged_rubygems_version
+          gv.packaged_rubygems_version      = gv.convert_to_utf8( gvd.packaged_rubygems_version ) # yeah odd, I know
           gv.packaged_specification_version = gvd.packaged_specification_version
-          gv.summary                        = gvd.summary
+          gv.summary                        = gv.convert_to_utf8( gvd.summary )
           gv.homepage                       = gvd.homepage
           gv.rubyforge_project              = gvd.rubyforge_project
-          gv.description                    = gvd.description
+          gv.description                    = gv.convert_to_utf8( gvd.description )
           gv.autorequire                    = gvd.autorequire
           gv.has_signing_key                = gvd.signing_key != nil
           gv.has_cert_chain                 = gvd.cert_chain != nil
           gv.has_extension                  = !gvd.extensions.empty?
-          gv.post_install_message           = gvd.post_install_message
+          gv.post_install_message           = gv.convert_to_utf8( gvd.post_install_message )
         end
         gem.add_gem_version( gv )
 
@@ -48,7 +49,7 @@ module Gemology
         gv.add_dependencies( gvd.dependencies )
         gv.add_licenses( gvd.meta_licenses )
         gv.add_licenses( gvd.file_licenses )
-        gv.gem_version_raw_specification = GemVersionRawSpecification.new( :ruby => gvd.specification.to_ruby )
+        gv.gem_version_raw_specification = GemVersionRawSpecification.new( :ruby => gv.convert_to_utf8( gvd.specification.to_ruby ) )
         gv.add_file_info( gvd.file_info )
 
         return gv
@@ -63,10 +64,59 @@ module Gemology
           end
           lic = Db::License.isolated_find_or_create( :sha1 => member[:sha1] ) do |rec|
             rec.name = member[:name]
-            rec.content = member[:content]
+            rec.content = convert_to_utf8(member[:content])
           end
           add_license( lic )
         end
+      end
+
+      #
+      # poor mans utf8 conversion needed for the database
+      # us-ascci is a subset of utf8, so those we can skip if that is what they
+      # are and it is a valid encoding
+      #
+      # If it is not valid encoding, then try each encoding (except for
+      # ASCII-8BIT) until one says it is a valid encoding, then force and
+      # Iconv conversion from that encoding to UTF-8
+      #
+      def convert_to_utf8( str )
+        return str if str.nil?
+        return str if %w[ UTF-8 US-ASCII ].include?( str.encoding.name ) && str.valid_encoding?
+        before_bytes = str.bytesize
+        if (str.encoding.name != "ASCII-8BIT") && str.valid_encoding? then
+          from = str.encoding.name
+        else
+          from = find_encoding_of( str )
+          from = "UTF-8" if from == "ASCII-8BIT"
+        end
+
+        result = nil
+        used = nil
+        %w[ UTF-8//TRANSLIT//IGNORE UTF-8//IGNORE ].each do |to|
+          logger.info "Force an encoding conversion of #{before_bytes} #{str.encoding.name} bytes from #{from} to #{to}"
+          begin
+            result = Iconv.conv( to, from, str )
+            used = to
+            break
+          rescue => e
+            logger.error e.inspect
+          end
+        end
+        raise Gemology::Error, "Unable to do utf8 conversion on string >>>#{str}<<<" unless result
+
+        result.force_encoding( "UTF-8" )
+        logger.info "Forced an encoding conversion of #{before_bytes} #{str.encoding.name} bytes from #{from} to #{result.bytesize} bytes at #{used}"
+        return result
+      end
+
+      def find_encoding_of( str, skip = %w[ UTF-8 ASCII-8BIT ] )
+        test_str = str.dup
+        Encoding.list.each do |enc|
+          next if skip.include?( enc.name )
+          test_str.force_encoding( enc ) 
+          return enc.name if test_str.valid_encoding?
+        end
+        return "ASCII-8BIT"
       end
 
       def add_file_info( file_info_list )

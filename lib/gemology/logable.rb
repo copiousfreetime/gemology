@@ -31,4 +31,16 @@ module Gemology
       ::Logging::Logger[self]
     end
   end
+
+  # for when you need ane explicit logging class instance
+  class Logger
+    include Logable
+    %w[ info warn error debug fatal ].each do |m|
+      module_eval <<-_code
+        def #{m}(*args)
+          logger.#{m}(*args)
+        end
+      _code
+    end
+  end
 end

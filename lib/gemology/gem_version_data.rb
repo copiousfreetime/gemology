@@ -12,6 +12,7 @@ module Gemology
     end
 
     def initialize( data )
+      logger.info "data is #{data.encoding.name}"
       @data          = StringIO.open( data, "r" )
       @file_info     = []
       @file_licenses = []
@@ -89,11 +90,11 @@ module Gemology
     end
 
     def authors
-      @specification.authors
+      [@specification.authors].flatten.collect { |c| c.strip }.uniq
     end
 
     def emails
-      [@specification.email].flatten
+      [@specification.email].flatten.collect { |c| c.strip }.uniq
     end
 
     def rubyforge_project
@@ -160,7 +161,7 @@ module Gemology
         @file_info << fi
 
         if fi.is_license_file then
-          @file_licenses << { :name => 'UNKNOWN LICENSE', :sha1 => sha1, :content => file_data }
+          @file_licenses << { :name => entry_path, :sha1 => sha1, :content => file_data }
         end
       end
       return nil
@@ -173,7 +174,7 @@ module Gemology
     end
 
     def store_to_db( db )
-      g = Db::Gem.find_or_create( :name => gem_name )
+      g = Db::Gem.isolated_find_or_create( :name => gem_name )
       g.add_version_data( self )
     end
 

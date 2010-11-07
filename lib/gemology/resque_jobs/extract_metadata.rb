@@ -42,10 +42,11 @@ module Gemology
           logger.info "Starting extraction of metadata from #{@gemfile}"
           metadata = ::Gemology::GemVersionData.new( fetch( @gemfile ).data )
           ::Gemology::Db.open do |db|
+            logger.info "Storing #{@gemfile} in database"
             metadata.store_to_db( db )
           end
         rescue => e
-          logger.error e
+          logger.error e.message
           e.backtrace.each { |b| logger.debug b }
           raise e
         ensure

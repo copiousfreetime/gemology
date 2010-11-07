@@ -9,6 +9,7 @@ require 'digest/sha1'
 require 'fileutils'
 require 'net/http'
 require 'stringio'
+require 'iconv'
 
 ## rubygems libs
 begin

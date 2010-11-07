@@ -16,8 +16,8 @@ CREATE TABLE  gem_versions (
     full_name                       TEXT NOT NULL UNIQUE,
     md5                             VARCHAR(32) NOT NULL, -- of the .gem file
     sha1                            VARCHAR(40) NOT NULL, -- of the .gem file
-    version                         VARCHAR(16) NOT NULL,
-    platform                        VARCHAR(16) NOT NULL,
+    version                         VARCHAR(128) NOT NULL,
+    platform                        VARCHAR(128) NOT NULL,
     is_prerelease                   BOOLEAN NOT NULL,
     release_date                    DATE NOT NULL,
     required_rubygems_version       TEXT NOT NULL,
@@ -57,11 +57,11 @@ CREATE TABLE dependencies(
     id              SERIAL PRIMARY KEY,
     operator        VARCHAR(3) NOT NULL,
     gem_name        VARCHAR(128) NOT NULL,
-    version         VARCHAR(16) NOT NULL,
+    version         VARCHAR(128) NOT NULL,
     is_prerelease   BOOLEAN NOT NULL,
     dependency_type gem_dependency_type NOT NULL
 );
-CREATE UNIQUE INDEX dependencies_name_operator_version_prerelease_uidx ON dependencies( gem_name, operator, version, is_prerelease );
+CREATE UNIQUE INDEX dependencies_name_operator_version_prerelease_uidx ON dependencies( gem_name, operator, version, is_prerelease, dependency_type );
 
 DROP TABLE IF EXISTS gem_version_dependencies CASCADE;
 CREATE TABLE  gem_version_dependencies( 
@@ -78,7 +78,7 @@ CREATE INDEX  gem_version_dependencies_gem_version_id_idx ON gem_version_depende
 DROP TABLE IF EXISTS licenses CASCADE;
 CREATE TABLE licenses (
     id          SERIAL PRIMARY KEY,
-    name        VARCHAR(64) NOT NULL,
+    name        TEXT NOT NULL,
     content     TEXT NOT NULL,
     sha1        VARCHAR(40) NOT NULL UNIQUE
 );
@@ -161,8 +161,3 @@ CREATE TABLE  gem_version_files(
 
 CREATE INDEX  gem_version_files_filename_idx ON gem_version_files( filename );
 CREATE INDEX  gem_version_files_sha1_idx ON gem_version_files( sha1 );
-
-
-
-
-
