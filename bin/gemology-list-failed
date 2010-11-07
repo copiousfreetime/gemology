@@ -1,0 +1,11 @@
+#!/usr/bin/env ruby
+
+require 'gemology'
+
+total = Resque.redis.llen( :failed )
+
+total.times do |i|
+  item = Resque.decode( Resque.redis.lindex( :failed,  i ) )
+  puts item['payload']['args'].first
+end
+

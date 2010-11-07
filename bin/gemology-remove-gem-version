@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+require 'gemology'
+
+gemfile = ARGV.shift
+
+Gemology::Db.open do |db|
+  db.transaction do |t|
+    full_name = File.basename( gemfile, ".gem") 
+    puts "Removing #{full_name}"
+    gv = Gemology::Db::GemVersion[ :full_name => full_name ]
+    abort "Not found" unless gv
+
+    %w[ raw_specification licenses authors emails files dependencies requirements ].each do |relation|
+      gv.send( "gem_version_#{relation}_dataset" ).delete
+    end
+    gv.delete
+  end
+end
+
