@@ -78,8 +78,8 @@ CREATE INDEX  gem_version_dependencies_gem_version_id_idx ON gem_version_depende
 DROP TABLE IF EXISTS licenses CASCADE;
 CREATE TABLE licenses (
     id          SERIAL PRIMARY KEY,
-    name        VARCHAR(64),
-    content     TEXT NOT NULL UNIQUE,
+    name        VARCHAR(64) NOT NULL,
+    content     TEXT NOT NULL,
     sha1        VARCHAR(40) NOT NULL UNIQUE
 );
 

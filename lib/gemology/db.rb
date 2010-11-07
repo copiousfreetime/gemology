@@ -22,6 +22,7 @@ module Gemology
 
     def self.load_models
       Gemology.libdir('db') do
+        require 'plugins'
         require 'author'
         require 'dependency'
         require 'emails'

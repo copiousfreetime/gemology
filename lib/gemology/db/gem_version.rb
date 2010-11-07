@@ -46,22 +46,25 @@ module Gemology
         gv.add_ordered_emails( gvd.emails )
         gv.add_requirements( gvd.requirements )
         gv.add_dependencies( gvd.dependencies )
-        gv.add_meta_licenses( gvd.meta_licenses )
-        gv.add_file_licenses( gvd.file_licenses )
+        gv.add_licenses( gvd.meta_licenses )
+        gv.add_licenses( gvd.file_licenses )
         gv.gem_version_raw_specification = GemVersionRawSpecification.new( :ruby => gvd.specification.to_ruby )
         gv.add_file_info( gvd.file_info )
 
         return gv
       end
 
-      def add_meta_licenses( meta )
-        meta.each do |l|
-          add_license( :name => l, :content => l, :sha1 => Digest::SHA1.hexdigest( l ) )
-        end
-      end
-
-      def add_file_licenses( list )
-        list.each do |lic|
+      def add_licenses( list )
+        list.each do |member|
+          if String === member then
+            member.strip!
+            next unless member.length > 0
+            member = { :name => member, :content => member, :sha1 => Digest::SHA1.hexdigest( member ) }
+          end
+          lic = Db::License.isolated_find_or_create( :sha1 => member[:sha1] ) do |rec|
+            rec.name = member[:name]
+            rec.content = member[:content]
+          end
           add_license( lic )
         end
       end
@@ -76,12 +79,12 @@ module Gemology
         deps.each do |dep|
           h = { :gem_name        => dep.name,
                 :is_prerelease   => dep.prerelease?,
-                :dependency_type => dep.type.to_s }
+                :dependency_type => (dep.type || :runtime ).to_s }
           # Not sure if this is ever more than one, but it has the potential to
           # be, so coding for that
           dep.requirement.requirements.each do |r|
             f = h.merge( :operator => r.first, :version => r.last.to_s )
-            d = Db::Dependency.find_or_create( f )
+            d = Db::Dependency.isolated_find_or_create( f )
             add_dependency( d )
           end
         end
@@ -89,21 +92,27 @@ module Gemology
 
       def add_ordered_authors( authors )
         authors.each_with_index do |author, idx|
-          a = Db::Author.find_or_create( :name => author )
+          next unless author
+          author.strip!
+          next unless author.length > 0
+          a = Db::Author.isolated_find_or_create( :name => author )
           add_gem_version_author( :author => a, :listed_order => idx )
         end
       end
 
       def add_ordered_emails( emails )
         emails.each_with_index do |email, idx|
-          e = Db::Email.find_or_create( :email => email )
+          next unless email
+          email.strip!
+          next unless email.length > 0
+          e = Db::Email.isolated_find_or_create( :email => email )
           add_gem_version_email( :email => e, :listed_order => idx )
         end
       end
 
       def add_requirements( requirements )
         requirements.each do |req|
-          r = Db::Requirement.find_or_create( :requirement => req )
+          r = Db::Requirement.isolated_find_or_create( :requirement => req )
           add_requirement( r )
         end
       end

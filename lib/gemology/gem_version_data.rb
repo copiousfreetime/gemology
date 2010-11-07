@@ -7,9 +7,12 @@ module Gemology
     attr_reader :specification
     attr_reader :file_info
 
-    def initialize( gemfile )
-      @gemfile       = gemfile
-      @data          = StringIO.open( IO.read( gemfile ), "r" )
+    def self.from_file( gemfile )
+      GemVersionData.new( IO.read( gemfile ) )
+    end
+
+    def initialize( data )
+      @data          = StringIO.open( data, "r" )
       @file_info     = []
       @file_licenses = []
       @format        = with_data{ |data| ::Gem::Format.from_io( data ) }
@@ -157,7 +160,7 @@ module Gemology
         @file_info << fi
 
         if fi.is_license_file then
-          @file_licenses << { :name => entry_path, :sha1 => sha1, :content => file_data }
+          @file_licenses << { :name => 'UNKNOWN LICENSE', :sha1 => sha1, :content => file_data }
         end
       end
       return nil
