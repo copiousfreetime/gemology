@@ -114,7 +114,7 @@ module Gemology
     end
 
     def post_install_message
-      @specification.post_install_message
+      [@specification.post_install_message].flatten.join("\n")
     end
 
     def test_files
