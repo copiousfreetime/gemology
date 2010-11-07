@@ -50,7 +50,7 @@ module Gemology
         gv.add_dependencies( gvd.dependencies )
         gv.add_licenses( gvd.meta_licenses )
         gv.add_licenses( gvd.file_licenses )
-        gv.gem_version_raw_specification = GemVersionRawSpecification.new( :ruby => gv.convert_to_utf8( gvd.specification.to_ruby ) )
+        gv.gem_version_raw_specification = GemVersionRawSpecification.new( :specification => gvd.specification.to_yaml )
         gv.add_file_info( gvd.file_info )
 
         return gv
@@ -82,6 +82,7 @@ module Gemology
       #
       def convert_to_utf8( str )
         return str if str.nil?
+        str = str.to_s # you would thing that everything passed in would be a string -- riskman gem
         return str if %w[ UTF-8 US-ASCII ].include?( str.encoding.name ) && str.valid_encoding?
         before_bytes = str.bytesize
         if (str.encoding.name != "ASCII-8BIT") && str.valid_encoding? then

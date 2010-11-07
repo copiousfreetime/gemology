@@ -45,7 +45,7 @@ DROP TABLE IF EXISTS gem_version_raw_specifications;
 CREATE TABLE  gem_version_raw_specifications( 
     id              SERIAL PRIMARY KEY,
     gem_version_id  INTEGER REFERENCES gem_versions( id ) UNIQUE NOT NULL,
-    ruby            TEXT NOT NULL
+    specification   TEXT NOT NULL
 );
 
 --
@@ -90,6 +90,8 @@ CREATE TABLE gem_version_licenses (
     gem_version_id  INTEGER REFERENCES gem_versions(id) NOT NULL,
     license_id      INTEGER REFERENCES licenses(id) NOT NULL
 );
+CREATE INDEX  gem_version_licenses_gem_version_id_idx ON gem_version_licenses( gem_version_id );
+CREATE INDEX  gem_version_licenses_license_id_idx ON gem_version_licenses( license_id );
 
 --
 -- authors listed in gems
@@ -160,5 +162,6 @@ CREATE TABLE  gem_version_files(
     is_license_file     BOOLEAN NOT NULL
 );
 
-CREATE INDEX  gem_version_files_filename_idx ON gem_version_files( filename );
-CREATE INDEX  gem_version_files_sha1_idx ON gem_version_files( sha1 );
+CREATE INDEX gem_version_files_filename_idx ON gem_version_files( filename );
+CREATE INDEX gem_version_files_sha1_idx ON gem_version_files( sha1 );
+CREATE INDEX gem_version_files_gem_version_id_idx ON gem_version_files( gem_version_id );
