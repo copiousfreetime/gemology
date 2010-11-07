@@ -90,11 +90,11 @@ module Gemology
     end
 
     def authors
-      [@specification.authors].flatten.collect { |c| c.strip }.uniq
+      flat_uniq_no_nils( @specification.authors )
     end
 
     def emails
-      [@specification.email].flatten.collect { |c| c.strip }.uniq
+      flat_uniq_no_nils( @specification.email )
     end
 
     def rubyforge_project
@@ -181,6 +181,15 @@ module Gemology
     def with_data( &block )
       @data.rewind
       yield @data
+    end
+
+    def flat_uniq_no_nils( list )
+      ol = []
+      [ list ].flatten.each do |l|
+        next if l.nil?
+        ol << l.strip
+      end
+      return ol.uniq
     end
 
     FileInfo = ::Struct.new( :sha1, :filename, :size, :mode, 

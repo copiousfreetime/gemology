@@ -111,7 +111,7 @@ module Gemology
 
       def find_encoding_of( str, skip = %w[ UTF-8 ASCII-8BIT ] )
         test_str = str.dup
-        Encoding.list.each do |enc|
+        encoding_list.each do |enc|
           next if skip.include?( enc.name )
           test_str.force_encoding( enc ) 
           return enc.name if test_str.valid_encoding?
@@ -119,15 +119,31 @@ module Gemology
         return "ASCII-8BIT"
       end
 
+      # ad hoc reording of testing encodings, haphazardly discovered based upon
+      # what seemed appropriate based on the conversions in rubygems
+      def encoding_list
+        head = []
+        tail = []
+        Encoding.list.each do |enc|
+          if enc.name =~ /\A(Big5|SJIS|CP|GB)/ then
+            tail << enc
+          else
+            head << enc
+          end
+        end
+        return [head, tail].flatten
+      end
+
       def add_file_info( file_info_list )
         file_info_list.each do |file_info|
+          file_info[:filename] = convert_to_utf8( file_info[:filename] )
           add_gem_version_file( Db::GemVersionFile.new( file_info.to_hash ) )
         end
       end
 
       def add_dependencies( deps )
         deps.each do |dep|
-          h = { :gem_name        => dep.name,
+          h = { :gem_name        => dep.name.to_s,  # some are symbols
                 :is_prerelease   => dep.prerelease?,
                 :dependency_type => (dep.type || :runtime ).to_s }
           # Not sure if this is ever more than one, but it has the potential to
@@ -142,9 +158,8 @@ module Gemology
 
       def add_ordered_authors( authors )
         authors.each_with_index do |author, idx|
-          next unless author
-          author.strip!
           next unless author.length > 0
+          author = convert_to_utf8( author )
           a = Db::Author.isolated_find_or_create( :name => author )
           add_gem_version_author( :author => a, :listed_order => idx )
         end
@@ -152,9 +167,8 @@ module Gemology
 
       def add_ordered_emails( emails )
         emails.each_with_index do |email, idx|
-          next unless email
-          email.strip!
           next unless email.length > 0
+          email = convert_to_utf8( email )
           e = Db::Email.isolated_find_or_create( :email => email )
           add_gem_version_email( :email => e, :listed_order => idx )
         end
@@ -162,6 +176,7 @@ module Gemology
 
       def add_requirements( requirements )
         requirements.each do |req|
+          req = convert_to_utf8( req )
           r = Db::Requirement.isolated_find_or_create( :requirement => req )
           add_requirement( r )
         end
