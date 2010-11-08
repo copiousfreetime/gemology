@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+require 'gemology'
+require 'set'
+
+job_class = ::Gemology::ResqueJob.get_subclass( 'extractmetadata' )
+puts "Fetching specs from rubygems.org..."
+specs     = ::Gemology::RubygemsClient.new.specs
+existing  = Set.new
+
+::Gemology::Db.open do |db|
+  puts "Fetching already extracted list from database...."
+  db[:gem_versions].select( :full_name ).each do |row|
+    existing << row[:full_name]
+  end
+end
+
+checked   = 0
+submitted = 0
+puts "Checking #{specs.size} rubygem specifications against the #{existing.size} db rows"
+
+specs.each do |a|
+  spec = ::Gemology::SpecLite.new( *a )
+
+  if not existing.include?( spec.full_name ) then
+    ::Resque.enqueue( job_class, spec.file_name )
+    submitted += 1
+  end
+
+  checked += 1
+  if checked % 5000 == 0 then
+    puts " #{"%6d" % checked} specs checked #{submitted} jobs submitted"
+  end
+end
+puts " #{"%6d" % checked} specs checked #{submitted} jobs submitted"
+puts "Finished."
+
