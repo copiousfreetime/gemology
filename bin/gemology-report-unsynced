@@ -33,27 +33,11 @@ not_in_rubyforge_db.each { |x| md5.delete( x ) }
 puts "  * #{md5.size} md5 checksums left after filtering out gems not in rubyforge db"
 
 md5_files = Set.new( md5.keys )
-container = Gemology::CloudContainer.new.rubygems
+cf        = Gemology::CloudFiles.new
+container = cf.rubygems
 puts "Checking #{md5_files.size} files against the #{container.count} files in the container"
 
-def fetch_container_info( container )
-  objs = Hash.new
-  last = nil
-  limit = 10_000
-  loop do
-    info  = container.list_objects_info( :marker => last, :limit => limit )
-    break if info.size == 0
-    first = info.keys.sort.first
-    last  = info.keys.sort.last
-    objs.merge!( info )
-
-    puts "  * Fetched (#{info.size}) #{first} .. #{last} -> #{objs.size} so far"
-    break if objs.size >= container.count
-  end
-  return objs
-end
-
-container_info   = fetch_container_info( container )
+container_info   = cf.fetch_container_info( container )
 not_in_container = md5_files - container_info.keys
 puts "#{not_in_container.size} files found that are on rubyforge.org but not in rubygems.org"
 

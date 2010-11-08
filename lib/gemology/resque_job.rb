@@ -35,7 +35,7 @@ module Gemology
     end
 
     def rubygems_container
-      CloudContainer.new.for('rubygems')
+      ::Gemology::CloudFiles.new.rubygems
     end
 
     def log_and_reraise( e )

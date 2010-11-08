@@ -3,5 +3,5 @@ require 'gemology'
 
 path = ARGV.shift
 gemfile = File.basename( path )
-cc = Gemology::CloudContainer.new.for( "rubygems" )
+cc = Gemology::CloudFiles.new.rubygems
 cc.object( gemfile ).save_to_filename( path )

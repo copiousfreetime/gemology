@@ -69,7 +69,7 @@ Gemology.libdir do
   require 'spec_lite'
 
   # configurabilty
-  require 'cloud_container'
+  require 'cloud_files'
   require 'db'
 
   require 'gem_version_data'
@@ -79,7 +79,6 @@ Gemology.libdir do
   require 'resque_jobs/extract_metadata'
   require 'resque_jobs/check_fetched'
   require 'specs_to_jobs'
-  require 'cloud_container'
   require 'rubygems_client'
 
   require 'webhook'
