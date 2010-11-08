@@ -1,6 +1,7 @@
 module Gemology
   module Db
     class GemVersionExistsError < ::Gemology::Error; end
+    class GemVersionEncodingError < ::Gemology::Error; end
     class GemVersion < ::Sequel::Model
       include ::Gemology::Logable
       many_to_one :gem
@@ -114,7 +115,7 @@ module Gemology
             logger.error e.inspect
           end
         end
-        raise Gemology::Error, "Unable to do utf8 conversion on string >>>#{str}<<<" unless result
+        raise GemVersionEncodingError, "Unable to do utf8 conversion on string >>>#{str}<<<" unless result
 
         result.force_encoding( "UTF-8" )
         logger.info "Forced an encoding conversion of #{before_bytes} #{str.encoding.name} bytes from #{from} to #{result.bytesize} bytes at #{used}"

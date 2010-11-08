@@ -37,6 +37,13 @@ module Gemology
     def rubygems_container
       CloudContainer.new.for('rubygems')
     end
+
+    def log_and_reraise( e )
+      logger.error "#{e.class} #{e.message}"
+      e.backtrace.each { |b| logger.debug b }
+      raise e
+    end
+
   end
 end
 

@@ -46,15 +46,23 @@ module Gemology
             metadata.store_to_db( db )
           end
         rescue ::NoSuchObjectException => e
-          logger.error e.message
-          logger.error "Not recording this as a failed job since we don't have the gem anyway"
+          logger.warn "<#{e.class} #{e.message}> means #{@gemfile} does not exist in our cloud container"
         rescue ::Gemology::Db::GemVersionExistsError => e
-          logger.error e.message
-          logger.error "This version must first be removed before rextracting, try 'gemology-remove-gem-version #{@gemfile}'"
+          logger.warn "<#{e.class} #{e.message}> means #{@gemfile} has already been extracted.  To re-extract first try 'gemology-remove-gem-version #{@gemfile}'"
+        rescue ::Gemology::Db::GemVersionEncodingError => e
+          logger.warn "<#{e.class} #{e.message}> means #{@gemfile} has some string encoding issues that could not be resolved."
+        rescue ::Gem::Package::FormatError => e
+          logger.warn "<#{e.class} #{e.message}> means #{@gemfile} cannot opened by Ruby #{RUBY_VERSION} with Rubygems #{Gem::VERSION}"
+        rescue ::ArgumentError => e
+          # unfortunately, this is the only way to skip this error
+          if e.backtrace[0] =~ /normalize_yaml_input/ then
+          #if e.message == "invalid byte sequence in UTF-8" then
+            logger.warn "<#{e.class} #{e.message}> means #{@gemfile} cannot opened by Ruby #{RUBY_VERSION} with Rubygems #{Gem::VERSION}"
+          else
+            log_and_reraise( e )
+          end
         rescue => e
-          logger.error e.message
-          e.backtrace.each { |b| logger.debug b }
-          raise e
+          log_and_reraise( e )
         ensure
           if @workdir then
             logger.info "Cleaning up #{@workdir}"
