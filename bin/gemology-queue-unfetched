@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+require 'gemology'
+require 'set'
+
+job_class = ::Gemology::ResqueJob.get_subclass( 'fetchstore' )
+puts "Fetching specs from rubygems.org..."
+specs     = ::Gemology::RubygemsClient.new.specs
+cf        = ::Gemology::CloudFiles.new
+ruby_cc   = cf.rubygems
+puts "Fetching already fetched list from CloudFiles...."
+existing  = Set.new( cf.object_keys( ruby_cc ) )
+
+checked   = 0
+submitted = 0
+puts "Checking #{specs.size} rubygem specifications against the #{existing.size} CloudFile rows"
+
+specs.each do |a|
+  spec = ::Gemology::SpecLite.new( *a )
+
+  if not existing.include?( spec.file_name ) then
+    ::Resque.enqueue( job_class, spec.file_name )
+    submitted += 1
+  end
+
+  checked += 1
+  if checked % 5000 == 0 then
+    puts " #{"%6d" % checked} specs checked #{submitted} jobs submitted"
+  end
+end
+puts " #{"%6d" % checked} specs checked #{submitted} jobs submitted"
+puts "Finished."
+
