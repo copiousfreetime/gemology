@@ -45,6 +45,18 @@ COPY (
 WITH CSV HEADER
 ;
 
+\set output :prefix/pre-post-gemcutter.csv
+\echo Writing :output
+COPY (
+    SELECT CASE WHEN release_date < '2009-11-16' THEN 'before'
+                ELSE 'after'
+            END AS category
+          ,count(*)
+      FROM gem_versions
+  GROUP BY category
+) TO :'output'
+WITH CSV HEADER
+;
 
 -- 
 -- Count of gem releases by platform by day
@@ -54,11 +66,11 @@ WITH CSV HEADER
 
 COPY (
     SELECT release_date
-          ,split_part(platform, '-', 1) || split_part(platform, '-', 2) AS platform
+          ,split_part(platform, '-', 1) || split_part(platform, '-', 2) AS platform_split
           ,count( * )   AS count
       FROM gem_versions 
-  GROUP BY release_date, platform
-  ORDER BY release_date, platform
+  GROUP BY release_date, platform_split
+  ORDER BY release_date, platform_split
 ) TO :'output'
 WITH CSV HEADER
 ;
@@ -71,11 +83,11 @@ WITH CSV HEADER
 \echo Writing :output
 COPY (
     SELECT date_trunc('month', release_date ) AS release_month
-          ,split_part(platform, '-', 1) || split_part(platform, '-', 2) AS platform
+          ,split_part(platform, '-', 1) || split_part(platform, '-', 2) AS platform_split
           ,count( * )   AS count
       FROM gem_versions 
-  GROUP BY release_month, platform
-  ORDER BY release_month, platform
+  GROUP BY release_month, platform_split
+  ORDER BY release_month, platform_split
 ) TO :'output'
 WITH CSV HEADER
 ;
@@ -127,10 +139,10 @@ WITH CSV HEADER
 \set output :prefix/platform-counts.csv
 \echo Writing :output
 COPY ( 
-    SELECT split_part(platform, '-', 1) || split_part(platform, '-', 2) AS platform
+    SELECT split_part(platform, '-', 1) || split_part(platform, '-', 2) AS platform_split
           ,count( * )   AS count
       FROM gem_versions
-  GROUP BY platform
+  GROUP BY platform_split
 ) TO :'output'
 WITH CSV HEADER
 ;
@@ -179,34 +191,6 @@ COPY (
 WITH CSV HEADER
 ;
 
---
--- dependency operator counts
--- 
-\set output :prefix/dependency-operator-counts.csv
-\echo Writing :output
-COPY (
-    SELECT operator
-          ,count(*) as count 
-      FROM dependencies 
-  GROUP BY operator
-) TO :'output'
-WITH CSV HEADER
-;
-
---
--- pre release dependencies
---
-\set output :prefix/prerelease-dependency-counts.csv
-\echo Writing :output
-COPY ( 
-    SELECT is_prerelease
-          ,count(*) AS count
-      FROM dependencies 
-  GROUP BY is_prerelease 
-) TO :'output'
-WITH CSV HEADER
-;
-
 ---
 --- required ruby gems version
 ---
@@ -245,8 +229,78 @@ COPY (
 WITH CSV HEADER
 ;
 
--- \set output :prefix/gem-dependencies.csv
--- \echo Writing :output
--- COPY (
-    -- SELECT g.name
-          -- ,d.type
+\set output :prefix/dependency-counts.csv
+\echo Writing :output
+COPY (
+    SELECT gem_name     
+          ,dependency_type
+          ,count(*)
+      FROM dependencies
+  GROUP BY gem_name, dependency_type
+  ORDER BY count(*) DESC
+) TO :'output'
+WITH CSV HEADER
+;
+
+\set output :prefix/dependency-inverse-counts.csv
+\echo Writing :output
+COPY (
+    SELECT gv.full_name AS full_name
+          ,(SELECT count(*) from gem_version_dependencies where gem_version_id = gv.id) AS count
+      FROM gem_versions AS gv
+  ORDER BY count DESC
+) TO :'output'
+WITH CSV HEADER
+;
+
+
+--
+-- dependency operator counts
+-- 
+\set output :prefix/dependency-operator-counts.csv
+\echo Writing :output
+COPY (
+    SELECT operator
+          ,dependency_type
+          ,count(*) as count 
+      FROM dependencies 
+  GROUP BY operator, dependency_type
+) TO :'output'
+WITH CSV HEADER
+;
+
+--
+-- pre release dependencies
+--
+\set output :prefix/prerelease-dependency-counts.csv
+\echo Writing :output
+COPY ( 
+    SELECT is_prerelease
+          ,dependency_type
+          ,count(*) AS count
+      FROM dependencies 
+  GROUP BY is_prerelease,dependency_type
+) TO :'output'
+WITH CSV HEADER
+;
+
+
+\set output :prefix/gem-dependencies.csv
+\echo Writing :output
+COPY (
+    SELECT DISTINCT
+           g.name               AS tail
+          ,d.dependency_type    AS dependency_type
+          ,d.gem_name           AS head
+      FROM dependencies AS d
+      JOIN gem_version_dependencies AS gvd
+        ON d.id = gvd.dependency_id
+      JOIN gem_versions AS gv
+        ON gvd.gem_version_id = gv.id
+      JOIN gems AS g
+        ON gv.gem_id = g.id
+) TO :'output'    
+WITH CSV HEADER
+;
+
+
