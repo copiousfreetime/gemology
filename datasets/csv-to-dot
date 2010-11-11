@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'fastercsv'
+
+csv = ARGV.shift
+
+types = Hash.new{ |h,k| h[k] = Array.new }
+
+FasterCSV.foreach( csv, :headers => true ) do |row|
+  types[row['dependency_type']] << row
+end
+
+def dotify(str)
+  label = str
+  s = str.gsub('-','_').gsub('.','')
+
+  s = "_#{s}" if str =~ /\A\d/
+
+  case str
+  when "_"
+    s = "__underscore"
+    label = "__underscore"
+  when "graph"
+    s = "__graph"
+    label = "__graph"
+  end
+
+  return [s, label]
+end
+
+types.each do |dep_type, deps|
+  dot = File.join( File.dirname( csv ), File.basename( csv, ".*" ) + "-#{dep_type}.dot" )
+  File.open( dot, "w+" ) do |f|
+    f.puts "digraph #{dep_type} {"
+    deps.each do |d|
+      next if d['head'] =~ /"/
+        next if d['tail'] =~ /"/
+        tail, tail_label = dotify( d['tail'] )
+      head, head_label = dotify( d['head'] )
+      #f.puts "  #{tail} [label=\"#{tail_label}\"] -> #{head} [label=\"#{head_label}\"];"
+      f.puts "  #{tail}  -> #{head} ;"
+    end
+    f.puts "}"
+  end
+end
+
