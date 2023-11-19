@@ -2,10 +2,10 @@ module Gemology
   class RubygemsClient
     include Logable
     def self.default_uri
-      "http://rubygems.org"
+      "https://rubygems.org"
     end
     def self.default_cdn_uri
-      "http://production.cf.rubygems.org/"
+      "https://production.cf.rubygems.org/"
     end
 
     def self.for_cdn
