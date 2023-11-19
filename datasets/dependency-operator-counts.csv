@@ -1,0 +1,13 @@
+operator,dependency_type,count
+<=,development,2
+=,runtime,3305
+<,development,18
+~>,runtime,2223
+>=,runtime,7898
+>,runtime,328
+<=,runtime,49
+<,runtime,94
+=,development,386
+~>,development,624
+>=,development,1729
+>,development,13
